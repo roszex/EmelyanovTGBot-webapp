@@ -1,4 +1,4 @@
-# EmelyanovTGBot - Railway Production Version
+# AndreyTGBot - Railway Production Version
 
 Telegram WebApp с интерактивной историей, развернутый на Railway с PostgreSQL базой данных.
 
@@ -7,7 +7,7 @@ Telegram WebApp с интерактивной историей, разверну
 ### 1. Клонирование репозитория
 ```bash
 git clone <your-repo-url>
-cd EmelyanovTGBot
+cd AndreyTGBot
 ```
 
 ### 2. Установка зависимостей

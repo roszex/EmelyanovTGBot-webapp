@@ -40,7 +40,7 @@ class ProgressManager {
         
         // Определяем среду
         this.isTelegram = !!(window.Telegram && window.Telegram.WebApp);
-        this.serverUrl = 'https://emelyanovtgbot-webapp-production.up.railway.app';
+        this.serverUrl = 'https://web-production-e3f0.up.railway.app';
         
         console.log('ProgressManager: User ID =', this.userId);
         console.log('ProgressManager: Telegram =', this.isTelegram);

@@ -1,5 +1,5 @@
 // Railway API configuration
-const RAILWAY_API_URL = 'https://emelyanovtgbot-webapp-production.up.railway.app';
+const RAILWAY_API_URL = 'https://web-production-e3f0.up.railway.app';
 
 // API functions
 const api = {

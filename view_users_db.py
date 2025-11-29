@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 
 # URL Railway API
-RAILWAY_API_URL = 'https://emelyanovtgbot-webapp-production.up.railway.app'
+RAILWAY_API_URL = 'https://web-production-e3f0.up.railway.app'
 
 def get_database_stats():
     """Получает статистику базы данных"""
