@@ -254,6 +254,41 @@ def get_or_create_user(user_id):
             conn.close()
         return None
 
+def save_form_answer(user_id, username, form_data):
+    """Сохраняет ответы формы в таблицу form_answers"""
+    conn = get_db_connection()
+    if not conn:
+        return False
+    
+    try:
+        cursor = conn.cursor()
+        
+        # Сохраняем в form_answers
+        cursor.execute('''
+            INSERT INTO form_answers (user_id, username, age, income, occupation, motivation, teamwork)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        ''', (
+            user_id,
+            username,
+            form_data.get('age'),
+            form_data.get('income'),
+            form_data.get('occupation'),
+            form_data.get('motivation'),
+            form_data.get('teamwork')
+        ))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        logger.info(f"Form answer saved to form_answers for user {user_id}")
+        return True
+    except Exception as e:
+        logger.error(f"Error saving form answer: {e}")
+        if conn:
+            conn.rollback()
+            conn.close()
+        return False
+
 def update_user_progress(user_id, current_page, form_data=None):
     """Обновляет прогресс пользователя в базе данных"""
     conn = get_db_connection()
@@ -412,6 +447,12 @@ def save_form_data():
         # Обновляем данные формы (сохраняем текущую страницу как 4)
         logger.info(f"Updating user progress for {user_id}")
         success = update_user_progress(user_id, 4, form_data)
+        
+        # Сохраняем в form_answers
+        if success:
+            logger.info(f"Saving to form_answers table")
+            username = user.get('username', user_id)
+            save_form_answer(user_id, username, form_data)
         
         if success:
             logger.info(f"Form data saved successfully for user {user_id}")

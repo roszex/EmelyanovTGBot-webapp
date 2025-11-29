@@ -154,7 +154,12 @@ document.getElementById('submitBtn').addEventListener('click', async function() 
         // Сохраняем данные формы
         if (window.progressManager) {
             console.log('Начинаем сохранение через ProgressManager...');
-            await window.progressManager.saveFormData(formData);
+            const saveResult = await window.progressManager.saveFormData(formData);
+            
+            if (!saveResult) {
+                throw new Error('Не удалось сохранить данные на сервере');
+            }
+            
             console.log('✅ Данные отправлены на сервер');
         } else {
             console.log('❌ ProgressManager недоступен');
