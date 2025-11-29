@@ -63,7 +63,7 @@ async def start(message: types.Message):
     
     builder = ReplyKeyboardBuilder()
     builder.add(KeyboardButton(
-        text="ТВОЙ ПУТЬ К 100.000₽",
+        text="Получить гайд по выходу на 100к",
         web_app=WebAppInfo(url=webapp_url)
     ))
     await message.answer(

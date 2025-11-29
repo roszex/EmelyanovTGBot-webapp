@@ -197,15 +197,17 @@ class ProgressManager {
             return;
         }
         
-        // Сохраняем прогресс на следующую страницу
-        await this.savePage(nextPage);
-        
-        // Переходим на следующую страницу
+        // Переходим на следующую страницу сразу, сохранение делаем асинхронно
         const currentUrl = window.location.href;
         const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
         const newUrl = baseUrl + `/../page_${nextPage}/index.html?user_id=${this.userId}`;
         
         console.log('ProgressManager: Переходим на', newUrl);
+        
+        // Сохраняем прогресс асинхронно, не ждем
+        this.savePage(nextPage).catch(err => console.error('Ошибка сохранения:', err));
+        
+        // Переходим сразу
         window.location.href = newUrl;
     }
     

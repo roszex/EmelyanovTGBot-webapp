@@ -78,6 +78,33 @@ function preloadImages() {
     });
 }
 
+// Предзагрузка ресурсов page_2
+function preloadPage2() {
+    console.log('Предзагрузка ресурсов page_2...');
+    
+    // Предзагружаем CSS
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '/page_2/style.css';
+    document.head.appendChild(link);
+    
+    // Предзагружаем JS
+    const script = document.createElement('script');
+    script.src = '/page_2/main.js';
+    script.async = true;
+    document.head.appendChild(script);
+    
+    // Предзагружаем HTML через fetch
+    fetch('/page_2/index.html')
+        .then(response => response.text())
+        .then(html => {
+            console.log('Page_2 HTML предзагружен');
+        })
+        .catch(err => {
+            console.error('Ошибка предзагрузки page_2:', err);
+        });
+}
+
 // Инициализация при загрузке страницы
 window.addEventListener('load', async function() {
     // Инициализируем Telegram WebApp (теперь через ProgressManager)
@@ -85,8 +112,8 @@ window.addEventListener('load', async function() {
         // ProgressManager уже инициализировал WebApp
         console.log('WebApp инициализирован через ProgressManager');
         
-        // Восстанавливаем прогресс при загрузке первой страницы
-        await window.progressManager.restoreProgressOnLoad();
+        // НЕ восстанавливаем прогресс автоматически - пусть пользователь сам переходит
+        // await window.progressManager.restoreProgressOnLoad();
     } else {
         // Fallback инициализация
         initTelegramWebApp();
@@ -99,8 +126,52 @@ window.addEventListener('load', async function() {
     preloadImages();
     setTimeout(forceLoadImages, 100);
     
+    // Предзагружаем ресурсы page_2
+    preloadPage2();
+    
     // НЕ сохраняем автоматически первую страницу - это создает проблемы
     // Прогресс будет сохранен только при явном переходе пользователя
+    
+    // Добавляем обработчик кнопки
+    const letsGoBtn = document.getElementById('letsGoBtn');
+    if (letsGoBtn) {
+        letsGoBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Кнопка "Получить гайд" нажата!');
+            
+            const container = document.querySelector('.container');
+            if (!container) {
+                console.error('Контейнер не найден!');
+                return;
+            }
+            
+            // Добавляем анимацию "ветра"
+            container.style.willChange = 'transform, opacity';
+            container.classList.add('wind-transition');
+            console.log('Анимация добавлена');
+            
+            // Ждём окончания анимации и переходим
+            setTimeout(() => {
+                // Переходим на следующую страницу через ProgressManager
+                if (window.progressManager) {
+                    console.log('Переход через ProgressManager');
+                    window.progressManager.goToNextPage();
+                } else {
+                    // Fallback если ProgressManager не загружен
+                    const currentUrl = window.location.href;
+                    const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
+                    const newUrl = baseUrl + '/../page_2/index.html';
+                    
+                    console.log('Fallback переход на:', newUrl);
+                    window.location.href = newUrl;
+                }
+            }, 500);
+        }, { passive: false });
+        console.log('Обработчик кнопки добавлен');
+    } else {
+        console.error('Кнопка letsGoBtn не найдена!');
+    }
 });
 
 // Функция для предотвращения закрытия приложения свайпами
@@ -159,27 +230,3 @@ function preventAppClose() {
         e.preventDefault();
     }, { passive: false });
 }
-
-// Обработчик кнопки "Поехали"
-document.getElementById('letsGoBtn').addEventListener('click', function() {
-    const container = document.querySelector('.container');
-    
-    // Добавляем анимацию "ветра"
-    container.classList.add('wind-transition');
-    
-    // Ждём окончания анимации и переходим
-    setTimeout(() => {
-        // Переходим на следующую страницу через ProgressManager
-        if (window.progressManager) {
-            window.progressManager.goToNextPage();
-        } else {
-            // Fallback если ProgressManager не загружен
-            const currentUrl = window.location.href;
-            const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
-            const newUrl = baseUrl + '/../page_2/index.html';
-            
-            console.log('Navigating to:', newUrl);
-            window.location.href = newUrl;
-        }
-    }, 500);
-}); 
