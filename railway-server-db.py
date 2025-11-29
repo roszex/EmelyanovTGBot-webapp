@@ -19,7 +19,7 @@ import time
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='webapp', static_url_path='')
 CORS(app)
 
 # Настройка кодировки для русского языка
@@ -74,15 +74,15 @@ def format_lead_message(lead_data):
 
 👤 <b>ЮЗ:</b> {lead_data.get('user_id', 'N/A')}
 
-❓ <b>Вопрос 1:</b> {lead_data.get('question_1', 'N/A')}
+❓ <b>Сколько тебе лет?</b> {lead_data.get('question_1', 'N/A')}
 
-❓ <b>Вопрос 2:</b> {lead_data.get('question_2', 'N/A')}
+❓ <b>Сколько зарабатываешь на данный момент?</b> {lead_data.get('question_3', 'N/A')}
 
-❓ <b>Вопрос 3:</b> {lead_data.get('question_3', 'N/A')}
+❓ <b>Чем занимаешься, какие успехи в данном направлении?</b> {lead_data.get('question_2', 'N/A')}
 
-❓ <b>Вопрос 4:</b> {lead_data.get('question_4', 'N/A')}
+❓ <b>Почему хотел бы узнать поподробнее про работу с банками?</b> {lead_data.get('question_4', 'N/A')}
 
-❓ <b>Вопрос 5:</b> {lead_data.get('question_5', 'N/A')}"""
+❓ <b>На сколько от 1/10 тебе нужен данный гайд.</b> {lead_data.get('question_5', 'N/A')}"""
     
     return message
 
@@ -476,7 +476,20 @@ def index():
 
 @app.route('/<path:filename>')
 def serve_static(filename):
-    return send_from_directory('webapp', filename)
+    try:
+        response = send_from_directory('webapp', filename)
+        # Устанавливаем правильные MIME типы для CSS и JS
+        if filename.endswith('.css'):
+            response.headers['Content-Type'] = 'text/css; charset=utf-8'
+        elif filename.endswith('.js'):
+            response.headers['Content-Type'] = 'application/javascript; charset=utf-8'
+        # Добавляем CORS заголовки для всех статических файлов
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Cache-Control'] = 'no-cache'
+        return response
+    except Exception as e:
+        logger.error(f"Error serving static file {filename}: {e}")
+        return f"File not found: {filename}", 404
 
 @app.route('/api/reset_id_counter', methods=['POST'])
 def reset_id_counter():

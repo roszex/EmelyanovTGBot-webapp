@@ -50,15 +50,20 @@ async def start(message: types.Message):
     
     # Формируем приветствие
     if message.from_user and message.from_user.username:
-        greeting = f"Привет, @{message.from_user.username}! Я Emelyanov и это моя история:"
+        greeting = f"Привет, @{message.from_user.username}! Меня зовут Андрей Денисов, я — эксперт по партнёрским программам банков (РКО) \n\nВ сентябре мне только исполнилось 18 лет, и я уже в таком возрасте смог выйти на стабильный доход более 500.000 рублей/месяц всего за 6 месяца в нише РКО"
     elif message.from_user and message.from_user.first_name:
-        greeting = f"Привет, {message.from_user.first_name}! Я Emelyanov и это моя история:"
+        greeting = f"Привет, {message.from_user.first_name}! Меня зовут Андрей Денисов, я — эксперт по партнёрским программам банков (РКО) \n\nВ сентябре мне только исполнилось 18 лет, и я уже в таком возрасте смог выйти на стабильный доход более 500.000 рублей/месяц всего за 6 месяца в нише РКО"
     else:
-        greeting = "Привет! Я Emelyanov и это моя история:"
+        greeting = "Привет! Меня зовут Андрей Денисов, я — эксперт по партнёрским программам банков (РКО) \n\nВ сентябре мне только исполнилось 18 лет, и я уже в таком возрасте смог выйти на стабильный доход более 500.000 рублей/месяц всего за 6 месяца в нише РКО"
+    
+    
+    
+    
+    
     
     builder = ReplyKeyboardBuilder()
     builder.add(KeyboardButton(
-        text="Читать историю",
+        text="ТВОЙ ПУТЬ К 100.000₽",
         web_app=WebAppInfo(url=webapp_url)
     ))
     await message.answer(
@@ -77,12 +82,12 @@ async def handle_webapp_data(message: types.Message):
             print(f"Bot: Получены данные от WebApp: {data}")
             
             # Обрабатываем разные типы действий
-            if data.get('action') == 'thank_you_response':
-                # Пользователь нажал кнопку "Как я могу тебя отблагодарить?"
+            if data.get('action') == 'form_submitted' or data.get('action') == 'thank_you_response':
+                # Пользователь заполнил форму на page_2 или завершил историю
                 user_id = data.get('user_id', 'unknown')
-                print(f"Bot: Пользователь {user_id} завершил историю")
+                print(f"Bot: Пользователь {user_id} завершил форму/историю")
                 
-                # Отправляем фото с описанием
+                # Отправляем сообщение про контакты
                 await message.answer_photo(
                     photo=types.FSInputFile("outro_photo.jpeg"),
                     caption="Потом сочтемся)\n\nПиши мне на аккаунт @EmelyanAssis, мой ассистент назначит время созвона.\n\nДо встречи братец! Я полетел",

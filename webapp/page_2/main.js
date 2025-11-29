@@ -1,11 +1,6 @@
 // Подключаем ProgressManager
 // <script src="../progress.js"></script> должен быть в HTML
 
-// Определяем базовый путь к картинкам (теперь относительно текущего домена)
-let baseImgUrl = window.location.origin + "/";
-
-// Пример: document.getElementById('main-img').src = baseImgUrl + '1_page_photo.jpeg';
-
 // Инициализация Telegram WebApp для полноэкранного режима
 function initTelegramWebApp() {
     if (window.Telegram && window.Telegram.WebApp) {
@@ -43,61 +38,188 @@ function initTelegramWebApp() {
     }
 }
 
-// Принудительная загрузка изображений для iPhone Safari
-function forceLoadImages() {
-    const images = document.querySelectorAll('img');
-    images.forEach(img => {
-        // Создаем новый Image объект для принудительной загрузки
-        const newImg = new Image();
-        newImg.onload = function() {
-            img.src = this.src;
-            img.style.opacity = '1';
-        };
-        newImg.onerror = function() {
-            console.error('Failed to load image:', this.src);
-            // Попробуем загрузить через fetch
-            fetch(this.src)
-                .then(response => response.blob())
-                .then(blob => {
-                    const url = URL.createObjectURL(blob);
-                    img.src = url;
-                    img.style.opacity = '1';
-                })
-                .catch(err => {
-                    console.error('Fetch also failed:', err);
-                });
-        };
-        newImg.src = img.src;
-    });
-}
-
-// Предзагрузка изображений для быстрой загрузки
-function preloadImages() {
-    const images = ['../3_page_photo.jpeg'];
-    images.forEach(src => {
-        const img = new Image();
-        img.src = src;
-    });
-}
-
 // Инициализация при загрузке страницы
-window.addEventListener('load', function() {
-    // Блокируем свайпы для закрытия приложения
-    preventAppClose();
+window.addEventListener('load', async function() {
+    console.log('=== ЗАГРУЗКА 2-Й СТРАНИЦЫ ===');
+    
     // Инициализируем Telegram WebApp
     initTelegramWebApp();
     
-    // Загружаем изображения
-    preloadImages();
-    setTimeout(forceLoadImages, 100);
+    // Устанавливаем текущую дату
+    const currentDate = new Date().toLocaleDateString('ru-RU');
+    console.log('Устанавливаем дату:', currentDate);
     
-    // Принудительно сохраняем текущую страницу
+    const dateElement = document.getElementById('currentDate');
+    if (dateElement) {
+        dateElement.textContent = currentDate;
+        console.log('Дата установлена успешно');
+    } else {
+        console.error('Элемент currentDate не найден!');
+    }
+    
+    // Блокируем свайпы для закрытия приложения
+    preventAppClose();
+    
+    // Обработчик клика вне полей ввода для скрытия клавиатуры
+    document.addEventListener('click', function(e) {
+        const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
+        const isLabel = e.target.tagName === 'LABEL';
+        
+        if (!isInput && !isLabel) {
+            // Если клик не по полю ввода или лейблу, убираем фокус со всех полей
+            const activeElement = document.activeElement;
+            if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+                activeElement.blur();
+            }
+        }
+    });
+    
+    // Восстанавливаем данные формы если есть
+    if (window.progressManager) {
+        const savedProgress = await window.progressManager.getSavedProgress();
+        if (savedProgress && savedProgress.form_data) {
+            console.log('Восстанавливаем данные формы:', savedProgress.form_data);
+            
+            // Заполняем поля формы
+            if (savedProgress.form_data.age) {
+                document.getElementById('age').value = savedProgress.form_data.age;
+            }
+            if (savedProgress.form_data.occupation) {
+                document.getElementById('occupation').value = savedProgress.form_data.occupation;
+            }
+            if (savedProgress.form_data.income) {
+                document.getElementById('income').value = savedProgress.form_data.income;
+            }
+            if (savedProgress.form_data.motivation) {
+                document.getElementById('motivation').value = savedProgress.form_data.motivation;
+            }
+            if (savedProgress.form_data.teamwork) {
+                document.getElementById('teamwork').value = savedProgress.form_data.teamwork;
+            }
+        }
+    }
+    
+    // Принудительно сохраняем текущую страницу (2)
     if (window.progressManager) {
         window.progressManager.savePage(2);
     }
 });
 
+// Функция для показа попапа сохранения
+function showSavePopup() {
+    const popup = document.getElementById('savePopup');
+    if (popup) {
+        popup.classList.add('show');
+    }
+}
 
+// Функция для скрытия попапа сохранения
+function hideSavePopup() {
+    const popup = document.getElementById('savePopup');
+    if (popup) {
+        popup.classList.remove('show');
+    }
+}
+
+// Обработчик отправки формы
+document.getElementById('submitBtn').addEventListener('click', async function() {
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('contactForm');
+    
+    // Проверяем валидность формы
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    // Блокируем кнопку и показываем попап
+    submitBtn.disabled = true;
+    showSavePopup();
+    
+    // Собираем данные формы
+    const formData = {
+        age: document.getElementById('age').value,
+        occupation: document.getElementById('occupation').value,
+        income: document.getElementById('income').value,
+        motivation: document.getElementById('motivation').value,
+        teamwork: document.getElementById('teamwork').value
+    };
+    
+    console.log('=== ОТПРАВКА ФОРМЫ ===');
+    console.log('Данные формы:', formData);
+    console.log('ProgressManager доступен:', !!window.progressManager);
+    console.log('User ID:', window.progressManager ? window.progressManager.userId : 'неизвестен');
+    
+    try {
+        // Сохраняем данные формы
+        if (window.progressManager) {
+            console.log('Начинаем сохранение через ProgressManager...');
+            await window.progressManager.saveFormData(formData);
+            console.log('✅ Данные отправлены на сервер');
+        } else {
+            console.log('❌ ProgressManager недоступен');
+            throw new Error('ProgressManager недоступен');
+        }
+        
+        // Ждем немного для показа попапа
+        console.log('Ждем 2 секунды для показа попапа...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Скрываем попап
+        hideSavePopup();
+        
+        // Переходим на следующую страницу (page_4)
+        console.log('Переходим на страницу 4...');
+        if (window.progressManager) {
+            const currentUrl = window.location.href;
+            const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
+            const newUrl = baseUrl + `/../page_4/index.html?user_id=${window.progressManager.userId}`;
+            window.location.href = newUrl;
+        } else {
+            // Fallback
+            const currentUrl = window.location.href;
+            const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
+            window.location.href = baseUrl + '/../page_4/index.html';
+        }
+        
+    } catch (error) {
+        console.error('❌ ОШИБКА ПРИ СОХРАНЕНИИ:', error);
+        
+        // Скрываем попап
+        hideSavePopup();
+        
+        // Показываем ошибку пользователю
+        alert('Произошла ошибка при сохранении данных: ' + error.message);
+        
+        // Разблокируем кнопку
+        submitBtn.disabled = false;
+    }
+});
+
+// Функция закрытия WebApp и отправки сообщения
+function closeWebAppAndSendMessage() {
+    const container = document.querySelector('.container');
+    
+    // Добавляем анимацию "ветра"
+    container.classList.add('wind-transition');
+    
+    // Ждём окончания анимации и закрываем WebApp
+    setTimeout(() => {
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+            
+            // Отправляем данные обратно в бота
+            tg.sendData(JSON.stringify({
+                action: 'form_submitted',
+                user_id: window.progressManager ? window.progressManager.userId : null,
+                message: 'пока'
+            }));
+            
+            // Закрываем WebApp
+            tg.close();
+        }
+    }, 500);
+}
 
 // Функция для предотвращения закрытия приложения свайпами
 function preventAppClose() {
@@ -154,30 +276,4 @@ function preventAppClose() {
     document.addEventListener('gestureend', function(e) {
         e.preventDefault();
     }, { passive: false });
-}
-
-// Обработчик кнопки "Слушаюсь"
-document.getElementById('listenBtn').addEventListener('click', function() {
-    const container = document.querySelector('.container');
-    
-    // Добавляем анимацию "ветра"
-    container.classList.add('wind-transition');
-    
-    // Ждём окончания анимации и переходим
-    setTimeout(() => {
-        // Переходим на следующую страницу через ProgressManager
-        if (window.progressManager) {
-            window.progressManager.goToNextPage();
-        } else {
-            // Fallback если ProgressManager не загружен
-            const currentUrl = window.location.href;
-            const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
-            const urlParams = new URLSearchParams(window.location.search);
-            const userId = urlParams.get('user_id');
-            const newUrl = baseUrl + '/../page_3/index.html' + (userId ? `?user_id=${userId}` : '');
-            
-            console.log('Navigating to:', newUrl);
-            window.location.href = newUrl;
-        }
-    }, 500);
-}); 
+} 

@@ -15,8 +15,8 @@ body {
     -webkit-overflow-scrolling: touch;
 
     /* Prevent zoom and rotation */
-    touch-action: manipulation;
-    -webkit-touch-action: manipulation;
+    touch-action: pan-y pan-x;
+    -webkit-touch-action: pan-y pan-x;
     /* Prevent text selection and zoom */
     -webkit-text-size-adjust: none;
     -moz-text-size-adjust: none;
@@ -83,8 +83,8 @@ html {
     -webkit-overflow-scrolling: touch;
 
     /* Prevent zoom and rotation */
-    touch-action: manipulation;
-    -webkit-touch-action: manipulation;
+    touch-action: pan-y pan-x;
+    -webkit-touch-action: pan-y pan-x;
 }
 
 .container {
