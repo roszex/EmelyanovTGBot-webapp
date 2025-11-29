@@ -166,6 +166,25 @@ def init_database():
             )
         ''')
         
+        # Создаем таблицу form_answers
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS form_answers (
+                id SERIAL PRIMARY KEY,
+                user_id VARCHAR(100) NOT NULL,
+                username VARCHAR(100),
+                age INTEGER,
+                income TEXT,
+                occupation TEXT,
+                motivation TEXT,
+                teamwork TEXT
+            )
+        ''')
+        
+        # Создаем индекс для быстрого поиска по user_id
+        cursor.execute('''
+            CREATE INDEX IF NOT EXISTS idx_form_answers_user_id ON form_answers(user_id)
+        ''')
+        
         conn.commit()
         cursor.close()
         conn.close()
@@ -448,11 +467,18 @@ def save_form_data():
         logger.info(f"Updating user progress for {user_id}")
         success = update_user_progress(user_id, 4, form_data)
         
-        # Сохраняем в form_answers
+        # Сохраняем в form_answers (необязательно, не влияет на общий результат)
         if success:
-            logger.info(f"Saving to form_answers table")
-            username = user.get('username', user_id)
-            save_form_answer(user_id, username, form_data)
+            try:
+                logger.info(f"Saving to form_answers table")
+                username = user.get('username', user_id)
+                form_answer_saved = save_form_answer(user_id, username, form_data)
+                if form_answer_saved:
+                    logger.info(f"Form answer saved to form_answers successfully")
+                else:
+                    logger.warning(f"Failed to save to form_answers, but continuing")
+            except Exception as e:
+                logger.error(f"Error saving to form_answers (non-critical): {e}")
         
         if success:
             logger.info(f"Form data saved successfully for user {user_id}")
